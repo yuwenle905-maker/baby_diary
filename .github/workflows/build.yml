@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest # 白嫖 GitHub 的云端 Mac 电脑
+    runs-on: macos-latest # 使用云端 Mac 电脑
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -31,12 +31,19 @@ jobs:
           cd baby_diary
           flutter build ipa --no-codesign
 
-      - name: Move IPA for Download
+      - name: Package Standard TrollStore IPA
         run: |
-          mkdir output
-          mv baby_diary/build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app output/宝贝日记.app
-          cd output
-          zip -r ../baby_diary.ipa 宝贝日记.app
+          # 1. 创建符合苹果和巨魔规范的 Payload 文件夹
+          mkdir -p Payload
+          
+          # 2. 把编译出来的 .app 移动到 Payload 里面
+          cp -r baby_diary/build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app Payload/
+          
+          # 3. 将其更名为“宝贝日记”让手机桌面显示中文
+          mv Payload/Runner.app Payload/宝贝日记.app
+          
+          # 4. 直接把 Payload 文件夹压成二进制 ipa，不嵌套任何多余母目录
+          zip -r baby_diary.ipa Payload
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
