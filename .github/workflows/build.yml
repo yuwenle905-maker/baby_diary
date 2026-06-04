@@ -1,0 +1,45 @@
+name: Flutter Build IPA (No Codesign)
+
+on:
+  workflow_dispatch: # 允许我们手动点击开始按钮
+
+jobs:
+  build:
+    runs-on: macos-latest # 白嫖 GitHub 的云端 Mac 电脑
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Create Project Structure
+        run: |
+          flutter create --org com.yuwenle baby_diary --platforms ios
+          cp main.dart baby_diary/lib/main.dart
+
+      - name: Build IPA (No Codesign)
+        run: |
+          cd baby_diary
+          flutter build ipa --no-codesign
+
+      - name: Move IPA for Download
+        run: |
+          mkdir output
+          mv baby_diary/build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app output/宝贝日记.app
+          cd output
+          zip -r ../baby_diary.ipa 宝贝日记.app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrollStore-IPA
+          path: baby_diary.ipa
