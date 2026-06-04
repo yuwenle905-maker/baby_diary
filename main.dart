@@ -147,15 +147,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: '守护设置'),
         ],
       ),
-      floatingActionButton: _currentIndex == 0 ? FloatingActionButton(
-        onPressed: () async {
-          await Navigator.pushNamed(context, '/add-diary');
-          setState(() {});
+     floatingActionButton: _currentIndex == 0 ? FloatingActionButton(
+        onPressed: () {
+          // 修改这里：让页面跳转去写日记，并且在写完返回（pop）时，立刻强制刷新主页画面
+          Navigator.pushNamed(context, '/add-diary').then((_) {
+            if (mounted) {
+              setState(() {});
+            }
+          });
         },
         backgroundColor: const Color(0xFFEAA15F),
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ) : null,
-    );
+    ); // 👈 瞧！就是这个关键的右括号和分号，千万不能丢！
   }
 }
 
